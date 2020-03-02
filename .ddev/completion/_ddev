@@ -1,0 +1,50 @@
+#compdef _ddev ddev
+
+function _ddev {
+
+  local line
+
+  _arguments -C -A "-*" \
+    "-h[Show help information]" \
+    "--h[Show help information]" \
+    "1: :(init powerline theme)" \
+    "*::arg:->args"
+
+  case $line[1] in
+    init)
+      _ddev_init
+      ;;
+    powerline)
+      _ddev_powerline
+      ;;
+    theme)
+      _ddev_theme
+      ;;
+  esac
+}
+
+function _ddev_init {
+  # no options available
+}
+
+function _ddev_powerline {
+  _arguments -C -A "-*" \
+    "-h[Show help information]" \
+    "--h[Show help information]" \
+    "1: :(enable disable)"
+}
+
+function _ddev_theme {
+  _arguments -C -A "-*" \
+    "-h[Show help information]" \
+    "--h[Show help information]" \
+    "1: :_ddev_theme_list"
+}
+
+function _ddev_theme_list {
+  _values "theme" $(
+    ls ~/.themes |
+    grep -v 'README.md\|_base.sh' | 
+    sed 's/\.sh//g'
+  )
+}

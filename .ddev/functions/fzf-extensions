@@ -1,0 +1,322 @@
+#!/bin/zsh
+# 
+# Extensions built on top of fzf
+#
+
+f () {
+  local PARSED_OPTIONS=`getopt \
+    --options +hq \
+    --longoptions help,quiet \
+    --name 'f' \
+    -- "$@"`
+  eval set -- "$PARSED_OPTIONS"
+
+  local quiet
+
+  while true; do
+    case "$1" in
+      -h | --help )
+        f_usage; return 0 ;;
+      -q | --quiet)
+        quiet=1 ;;
+      --)
+        shift; break ;;
+    esac
+    shift
+  done
+
+  if [ $# -eq 0 ]; then
+    f_main; return $?
+  fi
+
+  case "$1" in
+    -h | --help ) f_usage; return $? ;;
+    cd ) shift; f_cd $@; return $? ;;
+    popd ) shift; f_cd --stack $@; return $? ;;
+    wd ) shift; f_cd --warp-points $@; return $? ;;
+    z ) shift; f_z $@; return $? ;;
+    tags ) shift; f_tags $@; return $? ;;
+    * ) f_main $@; return $? ;;
+  esac
+}
+
+f_usage () {
+  echo "Usage: f [-hq] [--help ] [--quiet] subcommand [ subcommand opts ]"
+  echo "  f                           Open an iteractive file search session."
+  echo ""
+  echo "Options:"
+  echo "  -h, --help                  Display this help message."
+  echo "  -q, --quiet                 Suppress any unncessary output."
+  echo "Subcommands:"
+  echo "  cd [opts] [dir]             Change to a subdirectory."
+  echo "  popd                        Change to a directory on your stack."
+  echo "  wd                          Change to a directory in your warp points."
+  echo "  z                           Change to a directory based on 'frecency'."
+  echo "  tags                        Open a file based on ctags."
+}
+
+f_main () {
+  read -d "\n" action file line <<<$(f_rg $1)
+  case "$action" in
+    "" )
+      return 0  # user cancelled interaction
+      ;;
+    enter )
+      nvim +$line $file
+      return $?
+      ;;
+    tab )
+      [ -z $quiet ] && tree -aC -L 1 $(dirname $file)
+      cd $(dirname $file)
+      return $?
+      ;;
+    * ) echo "f: unexpected ouput from fzf '$action'." 1>&2; 
+  esac
+}
+
+f_cd () {
+
+  f_cd_usage () {
+    echo "Usage: f cd [-hfsw] [--help] [--files [dir]] [--stack] [--warp-points]"
+    echo "  f cd                        Open an iteractive file search session."
+    echo ""
+    echo "Options:"
+    echo "  -h, --help                  Display this help message."
+    echo "  -f, --files                 Include files in search."
+    echo "  -s, --stack                 Choose from directory stack."
+    echo "  -w, --warp-points           Choose from registered warp points."
+  }
+
+  local PARSED_OPTIONS=`getopt \
+    --options hfsw \
+    --longoptions help,files,stack,warp-points \
+    --name 'f cd' \
+    -- "$@"`
+  eval set -- "$PARSED_OPTIONS"
+
+  local search_files=0
+  local search_stack=0
+  local search_warp_points=0
+
+  while true; do
+    case "$1" in
+      -h | --help)
+        f_cd_usage; return 0 ;;
+      -f | --files)
+        search_files=1; ouput_type=file ;;
+      -s | --stack)
+        search_stack=1 ;;
+      -w | --warp-point)
+        search_warp_points=1 ;;
+      --)
+        shift; break ;;
+    esac
+    shift
+  done
+
+  local FZF_PREVIEW
+  local FZF_COMMAND
+  local FZF_OPTS
+  local CD_COMMAND
+  case "$search_files$search_stack$search_warp_points" in
+    000 )
+      # search directories
+      FZF_COMMAND="fd --hidden --type directory . $1"
+      FZF_PREVIEW='tree -aC -L 1 {}'
+      CD_COMMAND='cd $target'
+      ;;
+    100 )
+      # search files
+      FZF_COMMAND="fd --hidden --type file . $1"
+      FZF_PREVIEW='tree -aC -L 1 $(dirname {})'
+      CD_COMMAND='cd $(dirname $target)'
+      ;;
+    010 )
+      # search stack
+      FZF_COMMAND="dirs | sed 's#\s#\n#g' | uniq | sed s#^~#$HOME#g"
+      FZF_PREVIEW='tree -aC -L 1 {}'
+      CD_COMMAND='cd $target'
+      ;;
+    001 )
+      # search warp points
+      FZF_COMMAND="wd list | sed '1d'"
+      FZF_PREVIEW='tree -aC -L 1 $(echo {} | sed "s/.*  ->  //g" | sed s#^~#$HOME#g)'
+      FZF_OPTS='--nth=1,3'
+      CD_COMMAND='cd $(echo $target | sed "s/.*  ->  //g" | sed s#^~#$HOME#g)'
+      ;;
+    * )
+      # multiple options selected
+      echo "f cd: only one of the following may be present:" 1>&2
+      echo "  -f | --files" 1>&2
+      echo "  -s | --stack" 1>&2
+      echo "  -w | --warp-point" 1>&2
+      return 1
+      ;;
+  esac
+
+  local target=$(
+    eval $FZF_COMMAND | eval "fzf-tmux $FZF_OPTS --preview '$FZF_PREVIEW'" || echo $?
+  ) || return $?
+
+  [ "$target" = "130" ] && return 0
+
+  eval $CD_COMMAND
+}
+
+f_rg () {
+  local RG_PREFIX="rg --hidden --line-number --color always" 
+  local result=$(
+    eval "$RG_PREFIX . ${1:-./}" |
+    fzf-tmux --ansi --preview 'source ~/.ddev/functions/fzf-extensions; f_rg_preview {}' \
+             --preview-window down:80% --expect tab,enter --bind change:top
+  ) 2>/dev/null
+
+  read -d "\n" action object <<<$result
+
+  file=$(cut -d: -f1 <<<$object)
+  line=$(cut -d: -f2 <<<$object)
+
+  echo $action
+  echo $file
+  echo $line
+}
+
+f_rg_preview () {
+  # helper function to fill fzf preview window
+  # requires input like "<file>:<line>:<contents of line>"
+
+  # import zsh min and max functions
+  autoload zmathfunc && zmathfunc;
+
+  # get file and line number from rg output
+  file=$(cut -d: -f1 <<<$1);
+  line=$(cut -d: -f2 <<<$1);
+
+  # calculate start and stop lines for bat so that preview window is filled
+  total_lines=$(wc -l <$file);
+  preview_start=$((min(
+    max(
+      (line - ((FZF_PREVIEW_LINES - 5) / 3)),
+      1
+    ),
+    max(
+      (total_lines - FZF_PREVIEW_LINES + 5),
+      1
+    )
+  )))
+  preview_end=$((preview_start + FZF_PREVIEW_LINES - 5))
+
+  # run bat for file, highlighing and centering around specified line
+  bat --color always --highlight-line $line \
+    --line-range $preview_start:$preview_end\
+    $file;
+}
+
+f_z () {
+
+  f_z_usage () {
+    echo "Usage: f z [-hi] [--help] [--interactive]"
+    echo "  f z                         Fuzzy jump to a recent directory."
+    echo ""
+    echo "Options:"
+    echo "  -h, --help                  Display this help message."
+    echo "  -i, --interactive           Force interactive search of 'frecent' directories."
+  }
+  
+
+  local PARSED_OPTIONS=`getopt \
+    --options hi \
+    --longoptions help,interactive \
+    --name 'f z' \
+    -- "$@"`
+  eval set -- "$PARSED_OPTIONS"
+
+  local interactive
+
+  while true; do
+    case "$1" in
+      -h | --help)
+        f_z_usage; return 0 ;;
+      -i | --interactive)
+        interactive=1 ;;
+      --)
+        shift; break ;;
+    esac
+    shift
+  done
+
+  [ $# -eq 0 ] && interactive=1
+
+  if [ -z $interactive ]; then
+    local target=$(
+      z |
+      sed '1d' |
+      fzf --tac --filter="$1" --tiebreak="end" || echo $?
+    )
+    [ "$target" = "1" ] && echo "No match found for '$1'" && return 0
+
+    target=$(echo $target | sed '1q' | sed 's#^[^\/]*##g')
+  else
+    local target=$(
+      z |
+      sed '1d' |
+      fzf-tmux --tac --query="$1" --tiebreak="end" --preview '
+        tree -aC -L 1 $(echo {} | sed "s#^[^\/]*##g")
+      ' || echo $?
+    )
+
+    [ "$target" = "1" ] && echo "No match found for '$1'" && return 0
+    [ "$target" = "130" ] && return 0
+    
+    target=$(echo $target | sed 's#^[^\/]*##g')
+  fi
+
+  cd "$target"
+}
+
+f_tags () {
+
+  f_tags_usage () {
+    echo "Usage: f tags [-h] [--help]"
+    echo "  f tags                      Interactively search for and go to ctags."
+    echo ""
+    echo "Options:"
+    echo "  -h, --help                  Display this help message."
+  }
+  
+
+  local PARSED_OPTIONS=`getopt \
+    --options h \
+    --longoptions help\
+    --name 'f tags' \
+    -- "$@"`
+  eval set -- "$PARSED_OPTIONS"
+
+  while true; do
+    case "$1" in
+      -h | --help)
+        f_tags_usage; return 0 ;;
+      --)
+        shift; break ;;
+    esac
+    shift
+  done
+
+  if [[ ! -e 'tags' ]]; then
+    echo "No tags file found." 1>&2
+    return 0
+  fi
+
+  local target=$(
+    awk 'BEGIN { FS="\t" } !/^!/ {print toupper($4)"\t"$1"\t"$2"\t"$3}' tags \
+      | cut -c1-"$COLUMNS" \
+      | fzf --nth=2 --tiebreak=begin || echo $?
+  )
+
+  [ "$target" = "130" ] && return 0
+
+  local file=$(cut -f3 <<< "$target")
+  local tag=$(cut -f2 <<< "$target")
+
+  nvim "$target" -c "set nocst" -c "silent tag \"$tag\""
+}

@@ -1,0 +1,88 @@
+#!/bin/sh
+# 
+# external DDev utility for managing sessions
+#
+
+ddev () {
+  ddev_init
+
+  case "$1" in
+    -h | --help | help ) ddev_usage && return 0 ;;
+    stop ) shift; ddev_stop $@ && return 0 ;;
+    status ) shift; ddev_status $@ && return 0 ;;
+    * ) ddev_attach $@ && return 0 ;;
+  esac
+
+  ddev_usage && return 1
+}
+
+ddev_usage () {
+  echo "Usage:"
+  echo "  ddev [ -h | --help | help ]                 Display this help message."
+  echo "  ddev stop                                   Kill an active DDev server."
+  echo "  ddev status                                 Display active DDev servers."
+  echo ""
+  echo "  ddev [options]                              Run 'tmux [options]' in a DDev server."
+}
+
+ddev_init () {
+  ddev_get_container
+}
+
+ddev_get_container () {
+  read DDEV_CONTAINER DDEV_CONTAINER_NICKNAME <<<\
+    $(docker ps --format "{{.ID}} {{.Names}} {{.Image}}" | grep ddev* | awk 'NR==1 { print $1, $2 }')
+}
+
+ddev_start_container () {
+  docker run -d \
+    -v "ddev:/root" \
+    -v "$HOME:/root/mount" \
+    -v "$DDEV/.ddev:/root/.ddev" \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    ddev:latest $@ > /dev/null
+
+  ddev_get_container
+
+  while [ -z $(docker exec $DDEV_CONTAINER tmux showenv -g DDEV_INITIALIZED 2>/dev/null) ]; do
+    sleep 0.1
+  done
+}
+
+ddev_attach () {
+  if [ -z $DDEV_CONTAINER ]; then
+    ddev_start_container
+  fi
+
+  if [ $# -eq 0 ]; then
+    local DDEV_TARGET_DIRECTORY=$(pwd | sed "s|^$HOME|/root/mount|")
+    docker exec -it $DDEV_CONTAINER tmux new-session -c $DDEV_TARGET_DIRECTORY
+  else
+    docker exec -it $DDEV_CONTAINER tmux $@
+  fi
+}
+
+ddev_stop () {
+  if [ -z $DDEV_CONTAINER ]; then
+    echo "No active DDev server." && return 0
+  fi
+
+  local DDEV_ACTIVE_SESSIONS=$(ddev_attach ls)
+
+  if [ ! -z "$DDEV_ACTIVE_SESSIONS" ]; then
+    read -p "DDev server '$DDEV_CONTAINER_NICKNAME' has active sessions. Are you sure you want to kill them? [yN] " -n 1 -r && echo
+
+    [ ! "$REPLY" = "y" ] && [ ! "$REPLY" = "Y" ] && return 0
+  fi
+
+  docker kill $DDEV_CONTAINER > /dev/null
+}
+
+ddev_status () {
+  if [ -z $DDEV_CONTAINER ]; then
+    echo "No active DDev server."
+  else
+    echo "Active DDev server: $DDEV_CONTAINER_NICKNAME"
+    ddev_attach ls
+  fi
+}

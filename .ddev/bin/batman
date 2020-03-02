@@ -1,0 +1,5 @@
+#!/bin/zsh
+#
+# Syntax highlighted pager for man pages
+
+cat $1 | col -bx | bat --language=man
