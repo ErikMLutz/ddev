@@ -1,10 +1,7 @@
 #!/bin/zsh
 
 # symlink all files in .ddev/home
-for object in ~/.ddev/home/.*; do
-  echo $object
-  ln -sf $object /root/$(basename $object)
-done
+for object in ~/.ddev/home/.*; do ln -fns $object ~/$(basename $object); done
 
 # start empty server
 tmux start-server
