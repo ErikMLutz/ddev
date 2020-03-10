@@ -98,7 +98,6 @@ f_cd () {
   local search_stack=0
   local search_warp_points=0
 
-  echo $1
   while true; do
     case "$1" in
       -h | --help)
