@@ -56,8 +56,9 @@ RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM
 RUN tic -x -o $HOME/.terminfo $HOME/.ddev/misc/xterm-24bit.terminfo
 ENV TERM=xterm-24bit
 
-# clone themes from Mayccoll's Gogh repository
-RUN svn export https://github.com/Mayccoll/Gogh/trunk/themes $HOME/.themes
+# clone themes from Chris Kempson's Base-16 repository
+RUN svn export https://github.com/chriskempson/base16-shell/trunk/scripts $HOME/.themes
+RUN for theme in $HOME/.themes/*; do $HOME/.ddev/misc/convert_theme_file.sh $theme; done
 
 # Install Vim-Plug and run PlugInstall
 RUN curl -fLo $HOME/.local/share/nvim/site/autoload/plug.vim --create-dirs \

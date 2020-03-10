@@ -56,7 +56,7 @@ plugins=(
 # --------------------------------------------------------------------------------------------------
 
 # configure zsh-autosuggestions
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="default"
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=$COLOR_21,bg=$BACKGROUND_COLOR"
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_CLEAR_WIDGETS=(expand-or-complete $ZSH_AUTOSUGGEST_CLEAR_WIDGETS)
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1

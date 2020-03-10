@@ -139,7 +139,7 @@ ddev_theme () {
   }
 
   ddev_theme_apply () {
-    for i in {01..16}; do
+    for i in {01..22}; do
       # grab color and force lowercase, necessary for tmux.conf colors
       tmux set-environment -g COLOR_$i "$(ddev_theme_clean_color ${(P)$(echo COLOR_$i)})"
     done
@@ -202,6 +202,13 @@ ddev_theme () {
       export COLOR_15="14"
       export COLOR_16="15"
 
+      export COLOR_17="17"
+      export COLOR_18="18"
+      export COLOR_19="19"
+      export COLOR_20="20"
+      export COLOR_21="21"
+      export COLOR_22="22"
+
       export BACKGROUND_COLOR="default"
       export FOREGROUND_COLOR="default"
       export CURSOR_COLOR="default"
@@ -240,7 +247,7 @@ ddev_theme_sync () {
   # skip if already synced
   [ "PROFILE_NAME=$PROFILE_NAME" = "$(tmux show-environment -g PROFILE_NAME)" ] && return 0
 
-  for i in {01..16}; do
+  for i in {01..22}; do
     eval $(tmux show-environment -g COLOR_$i)
   done
   eval $(tmux show-environment -gs BACKGROUND_COLOR | sed 's/terminal/default/g')
@@ -287,32 +294,31 @@ ddev_theme_print_current () {
   print_in_box
 
   colors_box=""
-  for i in {1..8}; do
+  for i in {2..7}; do
     color_number=$(printf '%02d' $i)
-    colors_box="$colors_box%K{${(P)$(echo COLOR_$color_number)}}     "
+    colors_box="$colors_box%K{${(P)$(echo COLOR_$color_number)}}       "
   done
-  print_in_box "$colors_box" 40
+  print_in_box "$colors_box" 42
+  print_in_box "$colors_box" 42
+  print_in_box
 
   colors_box=""
-  for i in {9..16}; do
+  for i in {17..22}; do
     color_number=$(printf '%02d' $i)
-    colors_box="$colors_box%K{${(P)$(echo COLOR_$color_number)}}     "
+    colors_box="$colors_box%K{${(P)$(echo COLOR_$color_number)}}       "
   done
-  print_in_box "$colors_box" 40
+  print_in_box "$colors_box" 42
+  print_in_box "$colors_box" 42
   print_in_box
 
-  color_example="%K{$CURSOR_COLOR}     $(set_theme_fg_bg) Cursor Color: $(ddev_theme_clean_color $CURSOR_COLOR)"
-  print_in_box "$color_example" 27
-  print_in_box
-
-  for i in {1..16}; do
+  for i in {1..22}; do
     color_number=$(printf '%02d' $i)
     color_example="%K{${(P)$(echo COLOR_$color_number)}}     $(set_theme_fg_bg) COLOR_$color_number: $(ddev_theme_clean_color ${(P)$(echo COLOR_$color_number)})"
     print_in_box "$color_example" 23
   done
   print_in_box
 
-  bottom_padding=$(( lines - 26 ))
+  bottom_padding=$(( lines - 33 ))
   for i in $(eval echo "{1..$bottom_padding}"); do
     print_in_box
   done

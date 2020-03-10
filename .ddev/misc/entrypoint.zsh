@@ -1,7 +1,11 @@
 #!/bin/zsh
 
 # symlink all files in .ddev/home
-for object in ~/.ddev/home/.*; do ln -fns $object ~/$(basename $object); done
+for object in $(find ~/.ddev/home -type f | sed "s#/root/.ddev/home/##g"); do
+  mkdir -p ~/"$(dirname $object)"  # create directory if necessary
+  unlink ~/"$obj" > /dev/null 2>&1  # unlink any exiting objects
+  ln -fns ~/.ddev/home/$object ~/$(basename $object)  # link in DDev configuration
+done
 
 # start empty server
 tmux start-server

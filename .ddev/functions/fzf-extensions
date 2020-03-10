@@ -98,6 +98,7 @@ f_cd () {
   local search_stack=0
   local search_warp_points=0
 
+  echo $1
   while true; do
     case "$1" in
       -h | --help)
@@ -106,7 +107,7 @@ f_cd () {
         search_files=1; ouput_type=file ;;
       -s | --stack)
         search_stack=1 ;;
-      -w | --warp-point)
+      -w | --warp-points)
         search_warp_points=1 ;;
       --)
         shift; break ;;
