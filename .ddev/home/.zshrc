@@ -143,6 +143,9 @@ source /usr/share/zsh/site-functions/_fzf
 # hook direnv into shell
 eval "$(direnv hook zsh)"
 
+# set Neovim to listen to /tmp/nvim so that commands can be sent to all Neovim instances
+alias nvim="NVIM_LISTEN_ADDRESS=/tmp/nvim nvim"
+
 # apply p10k theme
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 

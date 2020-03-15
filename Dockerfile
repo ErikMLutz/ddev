@@ -30,7 +30,16 @@ RUN apk add --update-cache --no-cache --quiet \
     direnv direnv-doc \
     fd fd-doc \
     tree tree-doc \
-    z z-doc
+    z z-doc \
+    python3
+
+# Install build dependencies
+RUN apk add --no-cache --virtual build-deps \
+    gcc python3-dev musl-dev
+
+# Install Python packages
+RUN pip3 install \
+    neovim
 
 # Copy source files to ~/.ddev
 COPY .ddev $HOME/.ddev
@@ -67,5 +76,8 @@ RUN nvim -c "PlugInstall | qa"
 
 # set locale so that tmux opens using proper font
 ENV LANG=en_US.UTF-8
+
+# Remove build dependencies
+RUN apk del build-deps
 
 ENTRYPOINT ["entrypoint.zsh"]

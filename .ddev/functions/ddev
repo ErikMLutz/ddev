@@ -150,6 +150,7 @@ ddev_theme () {
 
     tmux source ~/.tmux.conf
     source ~/.zshrc
+    python3 ~/.ddev/misc/sync_neovim_colorschemes.py
   }
 
   if [ $# -eq 0 ]; then
@@ -256,6 +257,7 @@ ddev_theme_sync () {
   eval $(tmux show-environment -gs PROFILE_NAME)
 
   source ~/.zshrc
+  tmux source ~/.tmux.conf
 }
 
 ddev_theme_print_current () {

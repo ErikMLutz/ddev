@@ -31,5 +31,5 @@ head -n 30 $1 | sed '
   s/="/="#/g' > ~/.themes/$theme_file_name
 
 echo 'CURSOR_COLOR=$FOREGROUND_COLOR' >> ~/.themes/$theme_file_name
-echo "PROFILE_NAME=\"$(echo $theme_file_name | sed s/.sh//g)\"" >> ~/.themes/$theme_file_name
+echo "PROFILE_NAME=\"$(echo $theme_file_name | sed s/\\.sh//g)\"" >> ~/.themes/$theme_file_name
 unset theme_file_name
