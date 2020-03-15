@@ -45,7 +45,9 @@ RUN pip3 install \
 COPY .ddev $HOME/.ddev
 
 # add default versions of config files, will be overwritten by entrypoint script
-RUN for object in $(ls -a $HOME/.ddev/home | sed 1,2d); do ln -sf $HOME/.ddev/home/$object $HOME/$(basename $object); done
+COPY .ddev/misc/link_dotfiles.zsh /bin/link_dotfiles.zsh
+RUN chmod +x /bin/link_dotfiles.zsh
+RUN link_dotfiles.zsh
 
 # add entrypoint to bin
 COPY .ddev/misc/entrypoint.zsh /bin/entrypoint.zsh
