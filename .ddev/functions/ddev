@@ -78,6 +78,7 @@ ddev_powerline () {
     tmux set-environment -g DDEV_POWERLINE_VCS_UNTRACKED_ICON "$DDEV_POWERLINE_VCS_UNTRACKED_ICON"
     tmux source ~/.tmux.conf
     source ~/.p10k.zsh
+    python3 ~/.ddev/misc/sync_neovim_theme.py
   }
 
   if [ $# -ne 1 ]; then
@@ -150,7 +151,7 @@ ddev_theme () {
 
     tmux source ~/.tmux.conf
     source ~/.zshrc
-    python3 ~/.ddev/misc/sync_neovim_colorschemes.py
+    python3 ~/.ddev/misc/sync_neovim_theme.py
   }
 
   if [ $# -eq 0 ]; then
