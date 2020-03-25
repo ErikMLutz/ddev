@@ -25,7 +25,9 @@ let g:lightline = {
   \     },
   \     'component_function': {
   \         'git': 'fugitive#head',
-  \         'filepath': 'FullPathForLightline',
+  \     },
+  \     'component': {
+  \         'filepath': '%<%f',
   \     },
   \     'separator': { 'left': $DDEV_POWERLINE_RIGHT_ARROW, 'right': $DDEV_POWERLINE_LEFT_ARROW },
   \     'subseparator': { 'left': $DDEV_POWERLINE_RIGHT_ARROW_THIN, 'right': $DDEV_POWERLINE_LEFT_ARROW_THIN },
