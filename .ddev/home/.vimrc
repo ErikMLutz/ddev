@@ -13,8 +13,8 @@ call plug#end()
 
 " itchyny/lightline.vim
 set noshowmode  " disable default mode label since lightline has it's own
-function! FullPathForLightline()
-    return expand('%')
+function! LightlineFullPath()  " full file path with trunctation logic
+    return winwidth(0) > 70 ? expand('%') : ''
 endfunction
 
 let g:lightline = {
@@ -25,9 +25,8 @@ let g:lightline = {
   \     },
   \     'component_function': {
   \         'git': 'fugitive#head',
-  \     },
-  \     'component': {
-  \         'filepath': '%<%f',
+  \         'filepath': 'LightlineFullPath',
+  \         'lineinfo': 'LightlineLineInfo',
   \     },
   \     'separator': { 'left': $DDEV_POWERLINE_RIGHT_ARROW, 'right': $DDEV_POWERLINE_LEFT_ARROW },
   \     'subseparator': { 'left': $DDEV_POWERLINE_RIGHT_ARROW_THIN, 'right': $DDEV_POWERLINE_LEFT_ARROW_THIN },
