@@ -1,13 +1,23 @@
 " VIM Configuration
 
 " General
+set mouse=a      " allow mouse controls for all modes
+set backspace=2  " allow backspacing over end of lines
+set number       " show line numbers
+set cursorline   " highlight current line
+set ignorecase   " case insensitive searches
+set smartcase    " case sensitive if upper case letters are included
+set lazyredraw   " redraw the screen less
 
 " Install Plugins
 call plug#begin('~/.vim/plugged')
 
 Plug 'chriskempson/base16-vim'  " library of colorschemes that match DDev shell themes
-Plug 'itchyny/lightline.vim'    " Lightweight Powerline for Vim
+Plug 'itchyny/lightline.vim'    " lightweight Powerline for Vim
 Plug 'tpope/vim-fugitive'       " Git integration
+Plug 'tpope/vim-eunuch'         " common Unix commands
+Plug 'tpope/vim-surround'       " interact with 'surroundings' like quotes or parentheses
+Plug 'tpope/vim-repeat'         " add repeat (.) compatibility for many plugins
 
 call plug#end()
 
