@@ -149,5 +149,8 @@ alias nvim="NVIM_LISTEN_ADDRESS=/tmp/nvim nvim"
 # apply p10k theme
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# don't share history between terminals
+unsetopt sharehistory
+
 # signal to skip certain commands on subsequent runs
 export ZSHRC_SOURCED="TRUE"
