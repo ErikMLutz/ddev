@@ -4,7 +4,6 @@
 set mouse=a      " allow mouse controls for all modes
 set backspace=2  " allow backspacing over end of lines
 set number       " show line numbers
-set cursorline   " highlight current line
 set ignorecase   " case insensitive searches
 set smartcase    " case sensitive if upper case letters are included
 set lazyredraw   " redraw the screen less
@@ -18,6 +17,7 @@ Plug 'tpope/vim-fugitive'       " Git integration
 Plug 'tpope/vim-eunuch'         " common Unix commands
 Plug 'tpope/vim-surround'       " interact with 'surroundings' like quotes or parentheses
 Plug 'tpope/vim-repeat'         " add repeat (.) compatibility for many plugins
+Plug 'junegunn/fzf.vim'         " fzf integration with vim
 
 call plug#end()
 
@@ -48,6 +48,17 @@ function! LightlineReload()
   call lightline#colorscheme()
   call lightline#update()
 endfunction
+
+" junegunn/fzf.vim
+let g:fzf_files_options = ' --preview "bat --color always {}"'  " use bat with colors for preview
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --color=always --smart-case --hidden '.shellescape(<q-args>),
+  \   1,
+  \   fzf#vim#with_preview({'options': ['--tiebreak=end']}), <bang>0)  " modify Rg command to include preview
+
+map ; :Files<CR>|       " use fzf to search file list, mirrors DDev's "f nvim" command
+map <leader>; :Rg<CR>|  " use fzf to search within files, mirrors DDev's "f" command
 
 " Color Scheme
 set background = "dark"  " dark mode

@@ -118,6 +118,7 @@ precmd () {
 
 export FZF_DEFAULT_OPTS="\
   --reverse --cycle \
+  --bind change:top \
   --color bg:${BACKGROUND_COLOR/default/-1},bg+:$COLOR_01 \
   --color fg:${FOREGROUND_COLOR/default/-1},fg+:$COLOR_08 \
   --color hl:$COLOR_07,hl+:$COLOR_07 \
@@ -128,7 +129,7 @@ export FZF_DEFAULT_OPTS="\
   --color preview-fg:${FOREGROUND_COLOR/default/-1} \
   --color preview-bg:${BACKGROUND_COLOR/default/-1} \
   "
-export FZF_DEFAULT_COMMAND='rg --files'
+export FZF_DEFAULT_COMMAND='rg --files --hidden'
 
 # source fzf tab completion mechanism
 source /usr/share/zsh/site-functions/_fzf

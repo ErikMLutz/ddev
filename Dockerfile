@@ -22,6 +22,7 @@ RUN apk add --update-cache --no-cache --quiet \
     neovim neovim-doc \
     tmux tmux-doc \
     perl \
+    file \
     docker docker-doc \
     fzf fzf-tmux fzf-zsh-completion fzf-neovim fzf-doc \
     bat bat-doc \
