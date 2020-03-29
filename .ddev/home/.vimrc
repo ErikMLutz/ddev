@@ -12,6 +12,7 @@ set splitright           " create vertical splits to the right of current window
 set undofile             " save undo history to file and persist across sessions
 set undodir=~/.vim/undo  " location of undo history file
 set smartindent          " smarter autoindent based on syntax
+let mapleader = ","      " use comma as leader key 
 
 " Install Plugins
 call plug#begin('~/.vim/plugged')
@@ -23,6 +24,7 @@ Plug 'tpope/vim-eunuch'         " common Unix commands
 Plug 'tpope/vim-surround'       " interact with 'surroundings' like quotes or parentheses
 Plug 'tpope/vim-repeat'         " add repeat (.) compatibility for many plugins
 Plug 'junegunn/fzf.vim'         " fzf integration with vim
+Plug 'preservim/nerdtree'       " file browser
 
 call plug#end()
 
@@ -65,6 +67,11 @@ command! -bang -nargs=* Rg
 map ; :Files<CR>|       " use fzf to search file list, mirrors DDev's "f nvim" command
 map <leader>; :Rg<CR>|  " use fzf to search within files, mirrors DDev's "f" command
 
+" preservim/nerdtree
+let NERDTreeShowHidden = 1               " show hidden files
+let NERDTreeIgnore=['\.git$']            " hide .git directories
+nnoremap <leader>o :NERDTreeToggle<CR>|  " toggle NERDTree sidebar
+
 " Color Scheme
 set background = "dark"  " dark mode
 set termguicolors        " use 24 bit colors
@@ -77,7 +84,6 @@ augroup END
 colorscheme base16-$PROFILE_NAME  " sync colorscheme with DDev theme
 
 " Key Bindings
-let mapleader = ","  " use comma as leader key 
 
 nnoremap <silent> <leader>t :tabnew<CR>|  " new tab
 nnoremap <silent> <tab> gt|               " next tab
