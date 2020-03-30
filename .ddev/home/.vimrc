@@ -25,6 +25,7 @@ Plug 'tpope/vim-surround'       " interact with 'surroundings' like quotes or pa
 Plug 'tpope/vim-repeat'         " add repeat (.) compatibility for many plugins
 Plug 'junegunn/fzf.vim'         " fzf integration with vim
 Plug 'preservim/nerdtree'       " file browser
+Plug 'preservim/nerdcommenter'       " file browser
 
 call plug#end()
 
@@ -68,9 +69,15 @@ map ; :Files<CR>|       " use fzf to search file list, mirrors DDev's "f nvim" c
 map <leader>; :Rg<CR>|  " use fzf to search within files, mirrors DDev's "f" command
 
 " preservim/nerdtree
-let NERDTreeShowHidden = 1               " show hidden files
-let NERDTreeIgnore=['\.git$']            " hide .git directories
-nnoremap <leader>o :NERDTreeToggle<CR>|  " toggle NERDTree sidebar
+let g:NERDTreeShowHidden = 1               " show hidden files
+let g:NERDTreeIgnore=['\.git$']            " hide .git directories
+nnoremap <leader>o :NERDTreeToggle<CR>|    " toggle NERDTree sidebar
+
+" preservim/nerdcommenter
+let g:NERDSpaceDelims = 1             " add space after comment delimiter
+let g:NERDDefaultAlign = 'left'       " align multi-line comment delimiters instead of following code indentation
+let g:NERDCommentEmptyLines = 1       " also comment empty lines
+let g:NERDTrimTrailingWhitespace = 1  " auto trim trailing whitespace on uncomment
 
 " Color Scheme
 set background = "dark"  " dark mode
