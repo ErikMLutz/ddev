@@ -31,7 +31,7 @@ ddev_init () {
 
 ddev_get_container () {
   read DDEV_CONTAINER DDEV_CONTAINER_NICKNAME <<<\
-    $(docker ps --format "{{.ID}} {{.Names}} {{.Image}}" | grep ddev* | awk 'NR==1 { print $1, $2 }')
+    $(docker ps --format "{{.ID}} {{.Names}} {{.Image}}" | grep ddev | awk 'NR==1 { print $1, $2 }')
 }
 
 ddev_start_container () {

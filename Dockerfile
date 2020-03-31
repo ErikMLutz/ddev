@@ -76,7 +76,7 @@ RUN rm $HOME/.themes/base16-*
 # Install Vim-Plug and run PlugInstall
 RUN curl -fLo $HOME/.local/share/nvim/site/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-RUN nvim -c "PlugInstall | qa"
+RUN nvim --headless +PlugInstall +qa
 
 # set locale so that tmux opens using proper font
 ENV LANG=en_US.UTF-8
