@@ -44,14 +44,17 @@ ddev_start_container () {
 
   ddev_get_container
 
+  local iteration=1
   while [ -z $(docker exec $DDEV_CONTAINER tmux showenv -g DDEV_INITIALIZED 2>/dev/null) ]; do
+    [ $iteration -ge 100 ] && return 1
     sleep 0.1
+    iteration=$(($iteration+1))
   done
 }
 
 ddev_attach () {
   if [ -z $DDEV_CONTAINER ]; then
-    ddev_start_container
+    ddev_start_container || return 1
   fi
 
   if [ $# -eq 0 ]; then
