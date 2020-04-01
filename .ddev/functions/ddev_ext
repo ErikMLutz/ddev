@@ -10,7 +10,7 @@ ddev () {
     -h | --help | help ) ddev_usage && return 0 ;;
     stop ) shift; ddev_stop $@ && return 0 ;;
     status ) shift; ddev_status $@ && return 0 ;;
-    * ) ddev_attach $@ && return 0 ;;
+    * ) ddev_attach $@ && return 0 || return $? ;;
   esac
 
   ddev_usage && return 1
@@ -44,10 +44,18 @@ ddev_start_container () {
   )
 
   local iteration=1
-  while [ -z $(docker exec $DDEV_CONTAINER tmux showenv -g DDEV_INITIALIZED 2>/dev/null) ]; do
+  local initialized=""
+  while [ -z $initialized ]; do
+    if [ -z $(docker ps --format "{{.ID}}" --filter id=$DDEV_CONTAINER) ]; then
+      docker logs $DDEV_CONTAINER
+      return 1
+    fi
+
     [ $iteration -ge 100 ] && return 1
+
     sleep 0.1
     iteration=$(($iteration+1))
+    initialized=$(docker exec $DDEV_CONTAINER tmux showenv -g DDEV_INITIALIZED 2>/dev/null)
   done
 }
 
