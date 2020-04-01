@@ -155,3 +155,5 @@ unsetopt sharehistory
 
 # signal to skip certain commands on subsequent runs
 export ZSHRC_SOURCED="TRUE"
+
+[ -e ~/.zshrc.local ] || [ -L ~/.zshrc.local ] && source ~/.zshrc.local
