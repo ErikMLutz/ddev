@@ -31,7 +31,7 @@ Plug 'tpope/vim-surround'       " interact with 'surroundings' like quotes or pa
 Plug 'tpope/vim-repeat'         " add repeat (.) compatibility for many plugins
 Plug 'junegunn/fzf.vim'         " fzf integration with vim
 Plug 'preservim/nerdtree'       " file browser
-Plug 'preservim/nerdcommenter'       " file browser
+Plug 'preservim/nerdcommenter'  " quick comment commands
 
 call plug#end()
 
@@ -64,7 +64,7 @@ function! LightlineReload()
 endfunction
 
 " junegunn/fzf.vim
-let g:fzf_files_options = ' --preview "bat --color always {}"'  " use bat with colors for preview
+let g:fzf_files_options = ' --tiebreak end --preview "bat --color always {}"'  " use bat with colors for preview
 command! -bang -nargs=* Rg
   \  call fzf#vim#grep(
   \    'rg --column --line-number --no-heading --color=always --smart-case --hidden '.shellescape(<q-args>),
