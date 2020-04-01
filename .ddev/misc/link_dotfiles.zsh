@@ -2,12 +2,17 @@
 #
 # DDev utility that symlinks all dotfiles in /ddev/.ddev/home to their respective locations in ~
 
+local force  # whether or not to overwrite existing dotfiles
+[ "$1" = "--force" ] && force=1 || force=0
+
 local conflict=0
 local msg=""
 for object in $(find ~/.ddev/home -type f | sed "s#/root/.ddev/home/##g"); do
-  if [ -e ~/"$object" ] && [ "$(readlink ~/"$object")" != /root/.ddev/home/"$object" ]; then
-    conflict=1
-    msg="$msg $object \n"
+  if [ -e ~/"$object" ] || [ -L ~/"$object" ] && [ "$(readlink ~/"$object")" != /root/.ddev/home/"$object" ]; then
+    if [ $force -eq 0 ]; then  # raise conflict and continue without making changes
+      conflict=1
+      msg="$msg $object \n"
+    fi
   fi
 
   if [ $conflict -eq 0 ]; then  # only perform links of no conflicts are found

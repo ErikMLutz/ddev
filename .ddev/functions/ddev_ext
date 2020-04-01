@@ -23,6 +23,7 @@ ddev_usage () {
   echo "  ddev status                                 Display active DDev servers."
   echo ""
   echo "  ddev [options]                              Run 'tmux [options]' in a DDev server."
+  echo "  ddev --force                                [DANGEROUS] DDev will start and overwrite any existing dotfiles."
 }
 
 ddev_init () {
@@ -40,28 +41,32 @@ ddev_start_container () {
       -v "$HOME:/root" \
       -v "$DDEV/.ddev:/root/.ddev" \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      ddev:latest $@ > /dev/null
+      ddev:latest $@
   )
 
   local iteration=1
   local initialized=""
   while [ -z $initialized ]; do
-    if [ -z $(docker ps --format "{{.ID}}" --filter id=$DDEV_CONTAINER) ]; then
-      docker logs $DDEV_CONTAINER
-      return 1
-    fi
-
-    [ $iteration -ge 100 ] && return 1
+    [ -z $(docker ps --format "{{.ID}}" --filter id=$DDEV_CONTAINER) ] && break  # container shut down
+    [ $iteration -ge 100 ] && return 1  # startup timed out
 
     sleep 0.1
     iteration=$(($iteration+1))
     initialized=$(docker exec $DDEV_CONTAINER tmux showenv -g DDEV_INITIALIZED 2>/dev/null)
   done
+
+  if [ -z $(docker ps --format "{{.ID}}" --filter id=$DDEV_CONTAINER) ]; then
+    docker logs $DDEV_CONTAINER
+    return 1
+  fi
 }
 
 ddev_attach () {
   if [ -z $DDEV_CONTAINER ]; then
-    ddev_start_container || return 1
+    case "$1" in
+      --force ) shift; ddev_start_container --force || return 1 ;;
+      * ) ddev_start_container || return 1 ;;
+    esac
   fi
 
   if [ $# -eq 0 ]; then
