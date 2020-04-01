@@ -35,7 +35,8 @@ RUN apk add --update-cache --no-cache --quiet \
     fd fd-doc \
     tree tree-doc \
     z z-doc \
-    python3
+    python3 python3-doc \
+    openssh openssh-doc
 
 # Install build dependencies
 RUN apk add --no-cache --virtual build-deps \
