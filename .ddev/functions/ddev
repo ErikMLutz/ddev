@@ -157,7 +157,7 @@ ddev_theme () {
   if [ $# -eq 0 ]; then
     # promt user to select a theme
     local THEME=$(\
-      ls ~/.themes | \
+      ls /ddev/themes | \
       grep -v 'README.md\|_base.sh' | \
       sed 's/\.sh//g' | \
       fzf --preview 'source ~/.ddev/functions/ddev; ddev_theme_print {}' \
@@ -167,7 +167,7 @@ ddev_theme () {
 
     # override default 'apply-colors' script with empty script
     export SCRIPT_PATH=$HOME/.ddev/functions/apply-colors.sh
-    source $HOME/.themes/$THEME.sh
+    source /ddev/themes/$THEME.sh
     unset SCRIPT_PATH
 
     ddev_theme_apply
@@ -224,11 +224,11 @@ ddev_theme () {
       return $?
       ;;
     * )
-      [ ! -f ~/.themes/$1.sh ] && echo "ddev theme: unknown theme '$1'." 1>&2 && return 1 
+      [ ! -f /ddev/themes/$1.sh ] && echo "ddev theme: unknown theme '$1'." 1>&2 && return 1
       local THEME=$1
 
       export SCRIPT_PATH=$HOME/.ddev/functions/apply-colors.sh
-      source $HOME/.themes/$THEME.sh
+      source /ddev/themes/$THEME.sh
       unset SCRIPT_PATH
 
       ddev_theme_apply
@@ -344,7 +344,7 @@ ddev_theme_print () {
     "
     source ~/.ddev/functions/ddev
     export SCRIPT_PATH=~/.ddev/functions/apply-colors.sh;
-    source ~/.themes/$1.sh;
+    source /ddev/themes/$1.sh;
     unset SCRIPT_PATH;
     ddev_theme_print_current
     "

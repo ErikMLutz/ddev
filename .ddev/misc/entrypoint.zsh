@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # symlink all files in .ddev/home
-link_dotfiles  # run .ddev/misc/link_dotfiles.zsh
+link_dotfiles.zsh || exit 1  # run .ddev/misc/link_dotfiles.zsh
 
 # start empty server
 tmux start-server

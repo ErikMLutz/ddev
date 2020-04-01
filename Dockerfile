@@ -3,6 +3,9 @@ FROM alpine:latest
 # set HOME, which is not set by default
 ENV HOME /root
 
+# create storage directory for DDev resources
+RUN mkdir /ddev
+
 # Add edge repositories to apk
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
@@ -42,8 +45,8 @@ RUN apk add --no-cache --virtual build-deps \
 RUN pip3 install \
     neovim
 
-# Copy source files to ~/.ddev
-COPY .ddev $HOME/.ddev
+# Copy source files to /ddev
+COPY .ddev /ddev/.ddev
 
 # add default versions of config files, will be overwritten by entrypoint script
 COPY .ddev/misc/link_dotfiles.zsh /bin/link_dotfiles.zsh
@@ -65,13 +68,13 @@ ENV ZSH_CUSTOM=$ZSH/custom
 RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
 
 # Install terminfo configuration
-RUN tic -x -o $HOME/.terminfo $HOME/.ddev/misc/xterm-24bit.terminfo
+RUN tic -x /ddev/.ddev/misc/xterm-24bit.terminfo
 ENV TERM=xterm-24bit
 
 # clone themes from Chris Kempson's Base-16 repository
-RUN svn export https://github.com/chriskempson/base16-shell/trunk/scripts $HOME/.themes
-RUN for theme in $HOME/.themes/*; do $HOME/.ddev/misc/convert_theme_file.sh $theme; done
-RUN rm $HOME/.themes/base16-*
+RUN svn export https://github.com/chriskempson/base16-shell/trunk/scripts /ddev/themes
+RUN for theme in /ddev/themes/*; do /ddev/.ddev/misc/convert_theme_file.sh $theme; done
+RUN rm /ddev/themes/base16-*
 
 # Install Vim-Plug and run PlugInstall
 RUN curl -fLo $HOME/.local/share/nvim/site/autoload/plug.vim --create-dirs \

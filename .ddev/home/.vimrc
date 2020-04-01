@@ -15,6 +15,12 @@ set smartindent          " smarter autoindent based on syntax
 let mapleader = ","      " use comma as leader key 
 
 " Install Plugins
+if empty(glob('~/.vim/autoload/plug.vim'))  " auto install vim-plug
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
 call plug#begin('~/.vim/plugged')
 
 Plug 'chriskempson/base16-vim'  " library of colorschemes that match DDev shell themes
