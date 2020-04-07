@@ -70,8 +70,8 @@ zstyle ":completion:*:*:docker:*" option-stacking yes
 zstyle ":completion:*:*:docker-*:*" option-stacking yes
 
 # source autosuggestions and syntax highlighting
-[ -z $ZSHRC_SOURCED ] && source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-[ -z $ZSHRC_SOURCED ] && source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[ -z $ZSHRC_SOURCED ] && source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+[ -z $ZSHRC_SOURCED ] && source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # source function to toggle per directory history using ^g
 source $ZSH/plugins/per-directory-history/per-directory-history.zsh
@@ -131,8 +131,9 @@ export FZF_DEFAULT_OPTS="\
   "
 export FZF_DEFAULT_COMMAND='rg --files --hidden'
 
-# source fzf tab completion mechanism
-source /usr/share/zsh/site-functions/_fzf
+# source fzf zsh extensions
+source "/ddev/fzf/shell/completion.zsh"
+source "/ddev/fzf/shell/key-bindings.zsh"
 
 # --------------------------------------------------------------------------------------------------
 #                                           miscellaneous 

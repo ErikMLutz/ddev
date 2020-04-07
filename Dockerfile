@@ -1,86 +1,92 @@
-FROM alpine:latest
-
-# set HOME, which is not set by default
-ENV HOME /root
+FROM python:3.8
 
 # create storage directory for DDev resources
 RUN mkdir /ddev
 
-# Add edge repositories to apk
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+# Add DebianUnstable to APT sources
+RUN echo "deb http://http.us.debian.org/debian unstable main non-free contrib" >> /etc/apt/sources.list
+RUN echo "deb-src http://http.us.debian.org/debian unstable main non-free contrib" >> /etc/apt/sources.list
+RUN bash -c 'echo -e "Package: *\nPin: release a=stable\nPin-Priority: 700\n" >> /etc/apt/preferences'
+RUN bash -c 'echo -e "Package: *\nPin: release a=unstable\nPin-Priority: 600\n" >> /etc/apt/preferences'
 
 # Install Packages
-RUN apk add --update-cache --no-cache --quiet \
-    man man-pages \
-    ncurses ncurses-doc \
-    util-linux util-linux-doc \
+RUN apt update
+RUN apt --yes install \
+    man \
+    util-linux \
     bash \
-    zsh zsh-vcs zsh-autosuggestions zsh-syntax-highlighting\
-    oh-my-zsh \
-    curl curl-doc \
-    git git-doc \
-    subversion subversion-doc \
-    neovim neovim-doc \
-    tmux tmux-doc \
+    zsh \
+    zsh-autosuggestions \
+    zsh-syntax-highlighting\
+    curl \
+    git \
+    subversion \
+    neovim \
     perl \
     file \
-    docker docker-doc \
-    fzf fzf-tmux fzf-zsh-completion fzf-neovim fzf-doc \
-    bat bat-doc \
-    less less-doc \
-    ripgrep ripgrep-doc \
-    direnv direnv-doc \
-    fd fd-doc \
-    tree tree-doc \
-    z z-doc \
-    python3 python3-doc \
-    openssh openssh-doc
+    docker.io \
+    ripgrep \
+    direnv \
+    fd-find \
+    tree
 
-# Install build dependencies
-RUN apk add --no-cache --virtual build-deps \
-    gcc python3-dev musl-dev
+# Install Packages from DebianUnstable
+RUN apt --yes -t unstable install \
+    tmux \
+    bat \
+    less
+
+# Rename several installed commands to their more standard forms
+RUN ln -s /usr/bin/batcat /usr/bin/bat
+RUN ln -s /usr/bin/fdfind /usr/bin/fd
+
+# Install Oh-My-Zsh
+ENV ZSH=/usr/share/oh-my-zsh
+ENV ZSH_CUSTOM=$ZSH/custom
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+# Install Powerlevel10k
+RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
+
+# Install Z
+RUN curl --create-dirs -o /usr/share/z/z.sh https://raw.githubusercontent.com/rupa/z/master/z.sh
+
+# Install git-flow
+RUN sh -c "$(curl -fsSL https://raw.github.com/nvie/gitflow/develop/contrib/gitflow-installer.sh)"
+
+# Install FZF
+RUN git clone --depth 1 https://github.com/junegunn/fzf.git /ddev/fzf
+RUN /ddev/fzf/install --bin
+RUN cp /ddev/fzf/bin/* /usr/bin/
+
+# clone themes from Chris Kempson's Base-16 repository
+RUN svn export https://github.com/chriskempson/base16-shell/trunk/scripts /ddev/themes
+COPY .ddev/misc/convert_theme_file.sh /bin/convert_theme_file.sh
+RUN chmod +x /bin/convert_theme_file.sh
+RUN for theme in /ddev/themes/*; do convert_theme_file.sh $theme; done
+RUN rm /ddev/themes/base16-*
+
+# Install terminfo configuration
+COPY .ddev/misc/xterm-24bit.terminfo /ddev/xterm-24bit.terminfo
+RUN tic -x /ddev/xterm-24bit.terminfo
+ENV TERM=xterm-24bit
 
 # Install Python packages
 RUN pip3 install \
-    neovim
-
-# Copy source files to /ddev
-COPY .ddev /ddev/.ddev
+    neovim \
+    docker-compose
 
 # add default versions of config files, will be overwritten by entrypoint script
+COPY .ddev /root/.ddev
 COPY .ddev/misc/link_dotfiles.zsh /bin/link_dotfiles.zsh
 RUN chmod +x /bin/link_dotfiles.zsh
-RUN link_dotfiles.zsh
+RUN link_dotfiles.zsh --force
 
 # add entrypoint to bin
 COPY .ddev/misc/entrypoint.zsh /bin/entrypoint.zsh
 RUN chmod +x /bin/entrypoint.zsh
 
-# Install git-flow
-RUN sh -c "$(curl -fsSL https://raw.github.com/nvie/gitflow/develop/contrib/gitflow-installer.sh)"
-
-# oh-my-zsh installed via apk so set non standard directory (usually ~/.oh-my-zsh)
-ENV ZSH=/usr/share/oh-my-zsh
-ENV ZSH_CUSTOM=$ZSH/custom
-
-# Install Powerlevel10k
-RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
-
-# Install terminfo configuration
-RUN tic -x /ddev/.ddev/misc/xterm-24bit.terminfo
-ENV TERM=xterm-24bit
-
-# clone themes from Chris Kempson's Base-16 repository
-RUN svn export https://github.com/chriskempson/base16-shell/trunk/scripts /ddev/themes
-RUN for theme in /ddev/themes/*; do /ddev/.ddev/misc/convert_theme_file.sh $theme; done
-RUN rm /ddev/themes/base16-*
-
 # set locale so that tmux opens using proper font
 ENV LANG=en_US.UTF-8
-
-# Remove build dependencies
-RUN apk del build-deps
 
 ENTRYPOINT ["entrypoint.zsh"]

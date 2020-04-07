@@ -29,7 +29,8 @@ Plug 'tpope/vim-fugitive'       " Git integration
 Plug 'tpope/vim-eunuch'         " common Unix commands
 Plug 'tpope/vim-surround'       " interact with 'surroundings' like quotes or parentheses
 Plug 'tpope/vim-repeat'         " add repeat (.) compatibility for many plugins
-Plug 'junegunn/fzf.vim'         " fzf integration with vim
+Plug 'junegunn/fzf'             " fzf base functionality
+Plug 'junegunn/fzf.vim'         " additional fzf integrations with vim
 Plug 'preservim/nerdtree'       " file browser
 Plug 'preservim/nerdcommenter'  " quick comment commands
 

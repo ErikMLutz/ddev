@@ -1,6 +1,6 @@
 #!/bin/zsh
 #
-# DDev utility that symlinks all dotfiles in /ddev/.ddev/home to their respective locations in ~
+# DDev utility that symlinks all dotfiles in ~/.ddev/home to their respective locations in ~
 
 local force  # whether or not to overwrite existing dotfiles
 [ "$1" = "--force" ] && force=1 || force=0
