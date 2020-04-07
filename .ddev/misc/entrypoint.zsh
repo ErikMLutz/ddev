@@ -1,5 +1,8 @@
 #!/bin/zsh
 
+# update home directory of root user
+perl -i'' -pe "s#/root#$HOME#g" /etc/passwd
+
 # symlink all files in .ddev/home
 link_dotfiles.zsh $@ || exit 1  # run .ddev/misc/link_dotfiles.zsh
 
