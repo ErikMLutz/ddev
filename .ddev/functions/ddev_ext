@@ -38,9 +38,10 @@ ddev_get_container () {
 ddev_start_container () {
   DDEV_CONTAINER=$(
     docker run -d \
-      -v "$HOME:/root" \
-      -v "$DDEV/.ddev:/root/.ddev" \
+      -v "$HOME:$HOME" \
+      -v "$DDEV/.ddev:$HOME/.ddev" \
       -v /var/run/docker.sock:/var/run/docker.sock \
+      -e HOME \
       ddev:latest $@
   )
 
@@ -70,7 +71,7 @@ ddev_attach () {
   fi
 
   if [ $# -eq 0 ]; then
-    local DDEV_TARGET_DIRECTORY=$(pwd | sed "s|^$HOME|/root|")
+    local DDEV_TARGET_DIRECTORY=$(pwd)
     docker exec -it $DDEV_CONTAINER tmux new-session -c $DDEV_TARGET_DIRECTORY
   else
     docker exec -it $DDEV_CONTAINER tmux $@

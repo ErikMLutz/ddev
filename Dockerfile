@@ -76,15 +76,11 @@ RUN pip3 install \
     neovim \
     docker-compose
 
-# add default versions of config files, will be overwritten by entrypoint script
-COPY .ddev /root/.ddev
-COPY .ddev/misc/link_dotfiles.zsh /bin/link_dotfiles.zsh
-RUN chmod +x /bin/link_dotfiles.zsh
-RUN link_dotfiles.zsh --force
-
-# add entrypoint to bin
+# add scripts to bin
 COPY .ddev/misc/entrypoint.zsh /bin/entrypoint.zsh
 RUN chmod +x /bin/entrypoint.zsh
+COPY .ddev/misc/link_dotfiles.zsh /bin/link_dotfiles.zsh
+RUN chmod +x /bin/link_dotfiles.zsh
 
 # set locale so that tmux opens using proper font
 ENV LANG=en_US.UTF-8

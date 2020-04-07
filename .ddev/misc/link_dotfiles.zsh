@@ -7,8 +7,8 @@ local force  # whether or not to overwrite existing dotfiles
 
 local conflict=0
 local msg=""
-for object in $(find ~/.ddev/home -type f | sed "s#/root/.ddev/home/##g"); do
-  if [ -e ~/"$object" ] || [ -L ~/"$object" ] && [ "$(readlink ~/"$object")" != /root/.ddev/home/"$object" ]; then
+for object in $(find ~/.ddev/home -type f | sed "s#${HOME}/.ddev/home/##g"); do
+  if [ -e ~/"$object" ] || [ -L ~/"$object" ] && [ "$(readlink ~/"$object")" != "${HOME}"/.ddev/home/"$object" ]; then
     if [ $force -eq 0 ]; then  # raise conflict and continue without making changes
       conflict=1
       msg="$msg $object \n"
