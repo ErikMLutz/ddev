@@ -56,7 +56,7 @@ plugins=(
 # --------------------------------------------------------------------------------------------------
 
 # configure zsh-autosuggestions
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="default"
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=$COLOR_21,bg=$BACKGROUND_COLOR"
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_CLEAR_WIDGETS=(expand-or-complete $ZSH_AUTOSUGGEST_CLEAR_WIDGETS)
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
@@ -70,8 +70,8 @@ zstyle ":completion:*:*:docker:*" option-stacking yes
 zstyle ":completion:*:*:docker-*:*" option-stacking yes
 
 # source autosuggestions and syntax highlighting
-[ -z $ZSHRC_SOURCED ] && source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-[ -z $ZSHRC_SOURCED ] && source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+[ -z $ZSHRC_SOURCED ] && source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+[ -z $ZSHRC_SOURCED ] && source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # source function to toggle per directory history using ^g
 source $ZSH/plugins/per-directory-history/per-directory-history.zsh
@@ -118,6 +118,7 @@ precmd () {
 
 export FZF_DEFAULT_OPTS="\
   --reverse --cycle \
+  --bind change:top \
   --color bg:${BACKGROUND_COLOR/default/-1},bg+:$COLOR_01 \
   --color fg:${FOREGROUND_COLOR/default/-1},fg+:$COLOR_08 \
   --color hl:$COLOR_07,hl+:$COLOR_07 \
@@ -128,10 +129,11 @@ export FZF_DEFAULT_OPTS="\
   --color preview-fg:${FOREGROUND_COLOR/default/-1} \
   --color preview-bg:${BACKGROUND_COLOR/default/-1} \
   "
-export FZF_DEFAULT_COMMAND='rg --files'
+export FZF_DEFAULT_COMMAND='rg --files --hidden'
 
-# source fzf tab completion mechanism
-source /usr/share/zsh/site-functions/_fzf
+# source fzf zsh extensions
+source "/ddev/fzf/shell/completion.zsh"
+source "/ddev/fzf/shell/key-bindings.zsh"
 
 # --------------------------------------------------------------------------------------------------
 #                                           miscellaneous 
@@ -143,8 +145,16 @@ source /usr/share/zsh/site-functions/_fzf
 # hook direnv into shell
 eval "$(direnv hook zsh)"
 
+# set Neovim to listen to /tmp/nvim so that commands can be sent to all Neovim instances
+alias nvim="NVIM_LISTEN_ADDRESS=/tmp/nvim nvim"
+
 # apply p10k theme
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# don't share history between terminals
+unsetopt sharehistory
+
 # signal to skip certain commands on subsequent runs
 export ZSHRC_SOURCED="TRUE"
+
+[ -e ~/.zshrc.local ] || [ -L ~/.zshrc.local ] && source ~/.zshrc.local

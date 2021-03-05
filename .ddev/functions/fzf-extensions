@@ -36,6 +36,7 @@ f () {
     wd ) shift; f_cd --warp-points $@; return $? ;;
     z ) shift; f_z $@; return $? ;;
     tags ) shift; f_tags $@; return $? ;;
+    nvim ) shift; f_nvim $@; return $? ;;
     * ) f_main $@; return $? ;;
   esac
 }
@@ -52,6 +53,7 @@ f_usage () {
   echo "  popd                        Change to a directory on your stack."
   echo "  wd                          Change to a directory in your warp points."
   echo "  z                           Change to a directory based on 'frecency'."
+  echo "  nvim                        Open a file based on file name."
   echo "  tags                        Open a file based on ctags."
 }
 
@@ -106,7 +108,7 @@ f_cd () {
         search_files=1; ouput_type=file ;;
       -s | --stack)
         search_stack=1 ;;
-      -w | --warp-point)
+      -w | --warp-points)
         search_warp_points=1 ;;
       --)
         shift; break ;;
@@ -122,18 +124,21 @@ f_cd () {
     000 )
       # search directories
       FZF_COMMAND="fd --hidden --type directory . $1"
+      FZF_OPTS='--tiebreak="end"'
       FZF_PREVIEW='tree -aC -L 1 {}'
       CD_COMMAND='cd $target'
       ;;
     100 )
       # search files
       FZF_COMMAND="fd --hidden --type file . $1"
+      FZF_OPTS='--tiebreak="end"'
       FZF_PREVIEW='tree -aC -L 1 $(dirname {})'
       CD_COMMAND='cd $(dirname $target)'
       ;;
     010 )
       # search stack
       FZF_COMMAND="dirs | sed 's#\s#\n#g' | uniq | sed s#^~#$HOME#g"
+      FZF_OPTS='--tiebreak="end"'
       FZF_PREVIEW='tree -aC -L 1 {}'
       CD_COMMAND='cd $target'
       ;;
@@ -141,7 +146,7 @@ f_cd () {
       # search warp points
       FZF_COMMAND="wd list | sed '1d'"
       FZF_PREVIEW='tree -aC -L 1 $(echo {} | sed "s/.*  ->  //g" | sed s#^~#$HOME#g)'
-      FZF_OPTS='--nth=1,3'
+      FZF_OPTS='--nth=1,3 --tiebreak="end"'
       CD_COMMAND='cd $(echo $target | sed "s/.*  ->  //g" | sed s#^~#$HOME#g)'
       ;;
     * )
@@ -319,4 +324,43 @@ f_tags () {
   local tag=$(cut -f2 <<< "$target")
 
   nvim "$target" -c "set nocst" -c "silent tag \"$tag\""
+}
+
+f_nvim () {
+
+  f_nvim_usage () {
+    echo "Usage: f nvim [-h] [--help]"
+    echo "  f nvim                      Interactively search for and open a file."
+    echo ""
+    echo "Options:"
+    echo "  -h, --help                  Display this help message."
+  }
+
+
+  local PARSED_OPTIONS=`getopt \
+    --options h \
+    --longoptions help\
+    --name 'f nvim' \
+    -- "$@"`
+  eval set -- "$PARSED_OPTIONS"
+
+  while true; do
+    case "$1" in
+      -h | --help)
+        f_nvim_usage; return 0 ;;
+      --)
+        shift; break ;;
+    esac
+    shift
+  done
+
+  local target=$(
+    rg --files --hidden | \
+    fzf-tmux --tiebreak end --preview 'bat --color always {}' --bind change:top || \
+    echo $?
+  )
+
+  [ "$target" = "130" ] && return 0
+
+  nvim "$target"
 }

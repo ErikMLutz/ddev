@@ -43,7 +43,7 @@ function _ddev_theme {
 
 function _ddev_theme_list {
   _values "theme" $(
-    ls ~/.themes |
+    ls /ddev/themes |
     grep -v 'README.md\|_base.sh' | 
     sed 's/\.sh//g'
   )

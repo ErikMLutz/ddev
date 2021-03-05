@@ -1,10 +1,10 @@
 #!/bin/zsh
 
+# update home directory of root user
+perl -i'' -pe "s#/root#$HOME#g" /etc/passwd
+
 # symlink all files in .ddev/home
-for object in ~/.ddev/home/.*; do
-  echo $object
-  ln -sf $object /root/$(basename $object)
-done
+link_dotfiles.zsh $@ || exit 1  # run .ddev/misc/link_dotfiles.zsh
 
 # start empty server
 tmux start-server
